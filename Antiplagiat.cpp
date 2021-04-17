@@ -3,76 +3,162 @@
 using namespace std;
 
 double antiPlagiarism(string text, string fragment);
-string deleteRepeatWords(string text, int size);
-int getSizeStr(string str);
-string searchRepeatWords(string text,string word, int size, int lastIndex);
-string deleteWordInText(string text, int firstIndex, int lastIndex);
+string getUnsignedText(string text);
+string getTextWithoutNumbers(string text);
+string getRussianText(string text);
+char getRussianLetter(char text);
+string getCorrectedText(string text, char element);
+char getReplacingElements(char text, char element);
 
 int main()
 {
-	string text = "наступила весна на реке пошёл лёд берегу было много народу все смотрели как идёт лёд вдруг все увидали на одной льдине собаку она жалобно выла витя схватил длинный багор и зацепил льдину витя тихонько потянул льдину к берегу Когда льдина была у берега собака соскочила на землю";
-	string fragments = "весна собака много";
-	antiPlagiarism(text, fragments);
+	setlocale(LC_ALL, "Russian");
+
+	string text ("!На двoре октябрь. ,,, ,!?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
+
+	antiPlagiarism(text, " ");
 
 	return 0;
 }
 
 double antiPlagiarism(string text, string fragment) {
-	int size = getSizeStr(text);
 
-	text = deleteRepeatWords(text, size);
-	return 100;
+	text = getUnsignedText(text);
+	fragment = getUnsignedText(fragment);
+
+	text = getTextWithoutNumbers(text);
+	fragment = getTextWithoutNumbers(fragment);
+
+	text = getRussianText(text);
+	fragment = getRussianText(fragment);
+
+	cout << text;
+
+	return 0;
 }
 
-string deleteRepeatWords(string text, int size) {
-	string word = "";
-
-	for (int i = 0; i < size; i++) {
-		if (text[i] != ' ') {
-			word += text[i];
-		}
-		else {
-			text = searchRepeatWords(text, word,size,i);
-			word = "";
-		}
+string getRussianText(string text)
+{
+	for (int i = 0; text[i] != '\0'; i++)
+	{
+		text[i] = getRussianLetter(text[i]);
 	}
-	return " ";
+
+	return text;
 }
 
-string searchRepeatWords(string text, string word, int size,int lastIndex) {
-	string repetedWord = "";
-	int sizeRepetedWord = getSizeStr(word);
-
-	for (int i = lastIndex; i < size; i++) {
-		if (text[i] != ' ') {
-			repetedWord += text[i];
-		}
-		else {
-			if (repetedWord == word) {
-				text = deleteWordInText(text,i - sizeRepetedWord,i - 1);
-				repetedWord = "";
-			}
-			else {
-				repetedWord = "";
-			}
-		}
+char getRussianLetter(char text)
+{
+	if (text == 'y')
+	{
+		return 'у';
 	}
+	else if (text == 'K')
+	{
+		return 'К';
+	}
+	else if (text == 'E')
+	{
+		return 'Е';
+	}
+	else if (text == 'e')
+	{
+		return 'е';
+	}
+	else if (text == 'H')
+	{
+		return 'Н';
+	}
+	else if (text == 'X')
+	{
+		return 'Х';
+	}
+	else if (text == 'x')
+	{
+		return 'х';
+	}
+	else if (text == 'B')
+	{
+		return 'В';
+	}
+	else if (text == 'A')
+	{
+		return 'А';
+	}
+	else if (text == 'a')
+	{
+		return 'а';
+	}
+	else if (text == 'P')
+	{
+		return 'Р';
+	}
+	else if (text == 'p')
+	{
+		return 'р';
+	}
+	else if (text == 'O')
+	{
+		return 'О';
+	}
+	else if (text == 'o')
+	{
+		return 'о';
+	}
+	else if (text == 'C')
+	{
+		return 'C';
+	}
+	else if (text == 'c')
+	{
+		return 'c';
+	}
+	else if (text == 'T')
+	{
+		return 'Т';
+	}
+	else return text;
 }
 
+string getTextWithoutNumbers(string text)
+{
+	char numbers[] = "0123456789";
 
-
-
-
-
-
-//general methods for working with strings
-
-int getSizeStr(string str) {
-	int counter = 0;
-
-	while (str[counter] != '\0') {
-		counter++;
+	for (int i = 0; numbers[i] != '\0'; i++)
+	{
+		text = getCorrectedText(text, numbers[i]);
 	}
 
-	return counter;
+	return text;
+}
+
+string getUnsignedText(string text)
+{
+	char characters[] = "!.?,():;«»+-*/=%№";
+	
+	for (int i = 0; characters[i] != '\0'; i++)
+	{
+		text = getCorrectedText(text, characters[i]);
+	}
+
+	return text;
+}
+
+string getCorrectedText(string text, char element)
+{
+	for (int i = 0; text[i] != '\0'; i++)
+	{
+		text[i] = getReplacingElements(text[i], element);
+	}
+
+	return text;
+}
+
+char getReplacingElements(char text, char element)
+{
+	if (text == element)
+	{
+		return ' ';
+	}
+	else return text;
 }
