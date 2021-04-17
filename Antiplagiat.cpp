@@ -7,6 +7,8 @@ string getUnsignedText(string text);
 string getTextWithoutNumbers(string text);
 string getRussianText(string text);
 char getRussianLetter(char text);
+string getLowercaseText(string text);
+char getLowercase(char element);
 string getCorrectedText(string text, char element);
 char getReplacingElements(char text, char element);
 
@@ -14,7 +16,7 @@ int main()
 {
 	setlocale(LC_ALL, "Russian");
 
-	string text ("!На двoре октябрь. ,,, ,!?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
+	string text ("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдеёжзийклмнопрстуфхцчшщъыьэюя !?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
 
 	antiPlagiarism(text, " ");
 
@@ -32,9 +34,36 @@ double antiPlagiarism(string text, string fragment) {
 	text = getRussianText(text);
 	fragment = getRussianText(fragment);
 
+	text = getLowercaseText(text);
+	fragment = getLowercaseText(fragment);
+
 	cout << text;
 
 	return 0;
+}
+
+string getLowercaseText(string text)
+{
+	for (int i = 0; text[i] != '\0'; i++)
+	{
+		text[i] = getLowercase(text[i]);
+	}
+
+	return text;
+}
+
+char getLowercase(char element)
+{
+	if (element >= -64 and element <= -33)
+	{
+		int number = element;
+		return number + 32;
+	}
+	else if (element == -88)
+	{
+		return 'ё';
+	}
+	else return element;
 }
 
 string getRussianText(string text)
