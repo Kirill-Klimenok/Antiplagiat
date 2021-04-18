@@ -11,12 +11,17 @@ string getLowercaseText(string text);
 char getLowercase(char element);
 string getCorrectedText(string text, char element);
 char getReplacingElements(char text, char element);
+int getSizeStr(string text);
+string deleteRepeatedWords(string text);
+string checkRepeatWord(string text, string word, int lastIndex);
+string deleteStr(string text, int firstIndex, int lastIndex);
+string deleteSpaces(string text);
 
 int main()
 {
 	setlocale(LC_ALL, "Russian");
 
-	string text("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдеёжзийклмнопрстуфхцчшщъыьэюя !?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
+	string text("Уже убрали с полей картофель!?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
 
 	antiPlagiarism(text, " ");
 
@@ -37,7 +42,16 @@ double antiPlagiarism(string text, string fragment) {
 	text = getLowercaseText(text);
 	fragment = getLowercaseText(fragment);
 
-	cout << text;
+	text = deleteRepeatedWords(text);
+	fragment = deleteRepeatedWords(fragment);
+
+	cout << text << endl;
+
+	text = deleteSpaces(text);
+
+	cout << endl << text;
+
+	system("pause");
 
 	return 0;
 }
@@ -190,4 +204,84 @@ char getReplacingElements(char text, char element)
 		return ' ';
 	}
 	else return text;
+}
+
+/*
+5. проверка текст на повторяющиеся слова и удаляем если таковые есть();
+6. удаляем все устоявшееся фразы и сокращения, согласно массиву выражений();
+7. удаляем все союзы согласно массиву союзов();
+*/
+
+int getSizeStr(string text) {
+	int counter = 0;
+
+	while (text[counter] != '\0') counter++;
+
+	return counter;
+}
+
+string deleteRepeatedWords(string text) {
+	string word = "";
+
+	for (int i = 0; text[i] != '\0'; i++) {
+		if (text[i] != ' ') {
+			word += text[i];
+		}
+		else {
+			text = checkRepeatWord(text, word, i);
+			word = "";
+		}
+	}
+
+	return text;
+}
+
+string checkRepeatWord(string text, string word, int lastIndex) {
+	string wordInText = "";
+	int wordSize = 0;
+	int textSize = getSizeStr(text);
+	for (int i = lastIndex; i < textSize + 1; i++) {
+		if (text[i] != ' ') {
+			wordInText += text[i];
+		}
+		else if (word == wordInText) {
+			wordSize = getSizeStr(wordInText);
+			text = deleteStr(text, i - wordSize, i);
+			wordInText = "";
+		}
+		else {
+			wordInText = "";
+		}
+
+
+	}
+
+	return text;
+}
+
+string deleteStr(string text, int firstIndex, int lastIndex) {
+	for (int i = firstIndex; i < lastIndex; i++) {
+		text[i] = ' ';
+	}
+	return text;
+}
+string deleteSpaces(string text) {
+	int sizeText = getSizeStr(text);
+	string newText = "";
+	int counter = 0;
+	for (int i = 0; i < sizeText - 1; i++) {
+		if (text[i] == ' ' && counter == 0) {
+			newText += ' ';
+			counter = 1;
+		}
+
+
+		if (text[i]!=' ')
+		{
+			counter = 0;
+			newText += text[i];
+		}
+
+	}
+	return newText;
 }
