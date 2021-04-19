@@ -23,7 +23,7 @@ string deleteKeywords(string text, int index);
 bool isKeywords(string word, int index);
 string deletingSingleCharacterElements(string text);
 double countingPlagiarism(string text, string fragment);
-string getThreeWords(string words, int& lastIndex, string text);
+string getThreeWords(string words, int& lastIndex, string text, int& counter);
 
 int main()
 {
@@ -31,7 +31,7 @@ int main()
 
 	string text("Уже и убрали с полей а картофель и т.д. !?№;% 1 2 чтд 3 4 5 6 7 А 8 9 0 Уже убрали км с полей картофель.На с огородахдками.На м краю леса с краснеет п рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки. ");
 
-	cout << endl << "Plagiarism: " << antiPlagiarism("Уже и убрали с полей а картофель и т.д. На с огородахдками. На м краю леса ", "Уже убрали км с полей картофель.На с огородахдками. ");
+	cout << endl << "Plagiarism: " << antiPlagiarism(text, " убрали картофель на с огородхдками опушкам алеют зрелые ягоды калины пр еноен ое етент гнгн тнт нгт нгт а иап ипаиа ");
 
 	return 0;
 }
@@ -363,36 +363,39 @@ string deletingSingleCharacterElements(string text) {
 double countingPlagiarism(string text, string fragment) {
 	int lastIndexFragment = 0, lastIndexText = 0;
 	string threeWordsInText = text;
-	text += '\0';
 	string threeWordsInFragment;
 	double possibleMatches = 0.0;
 	double matches = 0.0;
+	int counter = 0;
 
 	while (true) {
-		threeWordsInFragment = getThreeWords(threeWordsInFragment, lastIndexFragment, fragment);
+		threeWordsInFragment = getThreeWords(threeWordsInFragment, lastIndexFragment, fragment, counter);
+		if (counter != 3) break;
+		possibleMatches++;
+		counter = 0;
 		lastIndexText = 0;
 		for (int i = 0; text[lastIndexText+1] != '\0'; i++) {
-			threeWordsInText = getThreeWords(threeWordsInText, lastIndexText, text);
+			threeWordsInText = getThreeWords(threeWordsInText, lastIndexText, text, counter);
 
 			if (threeWordsInText == threeWordsInFragment)
 			{
 				matches++;
 			}
-			possibleMatches++;
+			
 
 			i = lastIndexText;
+			
+			if (counter != 3) break;
 		}
-
-
-
-		if (text[lastIndexText + 1] == '\0') break;
 	}
+
+	cout << possibleMatches << '|' << matches << endl;
 
 	return (100 * matches) / possibleMatches;
 }
 
-string getThreeWords(string words, int& lastIndex, string text) {
-	int counter = 0;
+string getThreeWords(string words, int& lastIndex, string text, int& counter) {
+	counter = 0;
 	words = "";
 	for (int i = lastIndex; counter < 3 && text[i] != '\0'; i++) {
 		if (text[i] != ' ') {
