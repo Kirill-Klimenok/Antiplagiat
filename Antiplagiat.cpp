@@ -2,6 +2,9 @@
 
 using namespace std;
 
+string keywordsToDelete[] = { "т.д.","т.п.","др.","пр.","см.","ср.","чтд","кг","км","м","г","с","А","К" };
+string arrUnions[] = { "но", "и", "да"," не","или","либо", "же", "а", "что", "чтобы", "как", "так" };
+
 double antiPlagiarism(string text, string fragment);
 string getUnsignedText(string text);
 string getTextWithoutNumbers(string text);
@@ -16,19 +19,34 @@ string deleteRepeatedWords(string text);
 string checkRepeatWord(string text, string word, int lastIndex);
 string deleteStr(string text, int firstIndex, int lastIndex);
 string deleteSpaces(string text);
+string deleteKeywords(string text, int index);
+bool isKeywords(string word, int index);
+string deletingSingleCharacterElements(string text);
+double countingPlagiarism(string text, string fragment);
+string getThreeWords(string words, int& lastIndex, string text);
 
 int main()
 {
 	setlocale(LC_ALL, "Russian");
 
-	string text("Уже убрали с полей картофель!?№;% 1 2 3 4 5 6 7 8 9 0 Уже убрали с полей картофель.На огородахдками.На краю леса краснеет рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки.");
+	string text("Уже и убрали с полей а картофель и т.д. !?№;% 1 2 чтд 3 4 5 6 7 А 8 9 0 Уже убрали км с полей картофель.На с огородахдками.На м краю леса с краснеет п рябина.Кудрявое дерево её усыпано ягодами, словно яркими бусами.По опушкам алеют зрелые ягоды калины.Сильнее дует осенний ветер.В комнатах потеют окошки. ");
 
-	antiPlagiarism(text, " ");
+	cout << endl << "Plagiarism: " << antiPlagiarism("Уже и убрали с полей а картофель и т.д. На с огородахдками. На м краю леса ", "Уже убрали км с полей картофель.На с огородахдками. ");
 
 	return 0;
 }
 
 double antiPlagiarism(string text, string fragment) {
+
+	text = getLowercaseText(text);
+	fragment = getLowercaseText(fragment);
+
+	text = deleteKeywords(text, 1);
+	fragment = deleteKeywords(fragment, 1);
+
+	text = deleteKeywords(text, 2);
+	fragment = deleteKeywords(fragment, 2);
+
 
 	text = getUnsignedText(text);
 	fragment = getUnsignedText(fragment);
@@ -39,21 +57,20 @@ double antiPlagiarism(string text, string fragment) {
 	text = getRussianText(text);
 	fragment = getRussianText(fragment);
 
-	text = getLowercaseText(text);
-	fragment = getLowercaseText(fragment);
-
 	text = deleteRepeatedWords(text);
 	fragment = deleteRepeatedWords(fragment);
 
-	cout << text << endl;
+	text = deletingSingleCharacterElements(text);
+	fragment = deletingSingleCharacterElements(fragment);
 
 	text = deleteSpaces(text);
+	fragment = deleteSpaces(fragment);
 
-	cout << endl << text;
+	cout << text << endl << endl;
 
 	system("pause");
 
-	return 0;
+	return countingPlagiarism(text, fragment);
 }
 
 string getLowercaseText(string text)
@@ -207,7 +224,7 @@ char getReplacingElements(char text, char element)
 }
 
 /*
-5. проверка текст на повторяющиеся слова и удаляем если таковые есть();
+5. проверка текст на повторяющиеся слова и удаляем если таковые есть(); +
 6. удаляем все устоявшееся фразы и сокращения, согласно массиву выражений();
 7. удаляем все союзы согласно массиву союзов();
 */
@@ -265,6 +282,7 @@ string deleteStr(string text, int firstIndex, int lastIndex) {
 	}
 	return text;
 }
+
 string deleteSpaces(string text) {
 	int sizeText = getSizeStr(text);
 	string newText = "";
@@ -276,7 +294,7 @@ string deleteSpaces(string text) {
 		}
 
 
-		if (text[i]!=' ')
+		if (text[i] != ' ')
 		{
 			counter = 0;
 			newText += text[i];
@@ -284,4 +302,110 @@ string deleteSpaces(string text) {
 
 	}
 	return newText;
+}
+
+string deleteKeywords(string text, int index) {
+	string word = "";
+
+	for (int i = 0; text[i] != '\0'; i++) {
+		if (text[i] != ' ') {
+			word += text[i];
+		}
+		else if (isKeywords(word, index)) {
+			int strSize = getSizeStr(word);
+			text = deleteStr(text, i - strSize, i);
+			word = "";
+		}
+		else {
+			word = "";
+		}
+	}
+
+	return text;
+}
+
+bool isKeywords(string word, int index) {
+	int size = 0;
+	switch (index)
+	{
+	case 1:
+	{
+		size = sizeof(keywordsToDelete) / sizeof(keywordsToDelete[0]);
+		break;
+	}
+	case 2:
+	{
+		size = sizeof(arrUnions) / sizeof(arrUnions[0]);
+		break;
+	}
+	default:
+		size = 0;
+		break;
+	}
+
+	for (int i = 0; i < size; i++) {
+		if (word == keywordsToDelete[i]) return true;
+	}
+
+	return false;
+}
+
+string deletingSingleCharacterElements(string text) {
+	for (int i = 0; text[i] != '\0'; i++) {
+		if (text[i] != ' ' && text[i + 1] == ' ' && text[i - 1] == ' ') {
+			text[i] = ' ';
+		}
+	}
+
+	return text;
+}
+
+double countingPlagiarism(string text, string fragment) {
+	int lastIndexFragment = 0, lastIndexText = 0;
+	string threeWordsInText = text;
+	text += '\0';
+	string threeWordsInFragment;
+	double possibleMatches = 0.0;
+	double matches = 0.0;
+
+	while (true) {
+		threeWordsInFragment = getThreeWords(threeWordsInFragment, lastIndexFragment, fragment);
+		lastIndexText = 0;
+		for (int i = 0; text[lastIndexText+1] != '\0'; i++) {
+			threeWordsInText = getThreeWords(threeWordsInText, lastIndexText, text);
+
+			if (threeWordsInText == threeWordsInFragment)
+			{
+				matches++;
+			}
+			possibleMatches++;
+
+			i = lastIndexText;
+		}
+
+
+
+		if (text[lastIndexText + 1] == '\0') break;
+	}
+
+	return (100 * matches) / possibleMatches;
+}
+
+string getThreeWords(string words, int& lastIndex, string text) {
+	int counter = 0;
+	words = "";
+	for (int i = lastIndex; counter < 3 && text[i] != '\0'; i++) {
+		if (text[i] != ' ') {
+			words += text[i];
+		}
+		else {
+			words += ' ';
+			counter++;
+			if (counter == 1) {
+				lastIndex = i + 1;
+			}
+		}
+	}
+
+	return words;
 }
